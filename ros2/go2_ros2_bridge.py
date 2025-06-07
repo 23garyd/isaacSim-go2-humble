@@ -19,7 +19,7 @@ import go2.go2_ctrl as go2_ctrl
 
 ext_manager = omni.kit.app.get_app().get_extension_manager()
 ext_manager.set_extension_enabled_immediate("omni.isaac.ros2_bridge", True)
-from omni.isaac.ros2_bridge import read_camera_info
+from isaacsim.ros2.bridge import collect_namespace, read_camera_info
 
 
 class RobotDataManager(Node):
@@ -108,16 +108,19 @@ class RobotDataManager(Node):
  
     def create_ros_time_graph(self):
         og.Controller.edit(
-            {"graph_path": "/ClockGraph", "evaluator_name": "execution"},
+            {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
-                    ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
-                    ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
-                    ("OnPlayBack", "omni.graph.action.OnPlaybackTick"),
+                    ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("PublishClock", "isaacsim.ros2.bridge.ROS2PublishClock"),
+                    # ("OnPlayBack", "omni.graph.action.OnImpulseEvent"),
                 ],
                 og.Controller.Keys.CONNECT: [
                     # Connecting execution of OnImpulseEvent node to PublishClock so it will only publish when an impulse event is triggered
-                    ("OnPlayBack.outputs:tick", "PublishClock.inputs:execIn"),
+                    # ("OnPlayBack.outputs:tick", "PublishClock.inputs:execIn"),
+                    ("OnPlaybackTick.outputs:tick", "PublishClock.inputs:execIn"),
+
                     # Connecting simulationTime data of ReadSimTime to the clock publisher node
                     ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
                 ],
@@ -355,9 +358,9 @@ class RobotDataManager(Node):
                 {
                     keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                        ("IsaacCreateRenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
-                        ("ROS2CameraHelperColor", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
-                        ("ROS2CameraHelperDepth", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                        ("IsaacCreateRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
+                        ("ROS2CameraHelperColor", "isaacsim.ros2.bridge.ROS2CameraHelper"),
+                        ("ROS2CameraHelperDepth", "isaacsim.ros2.bridge.ROS2CameraHelper"),
                         # ("ROS2CameraHelperSegmentation", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
                         # ("ROS2CameraHelperDepthCloud", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
                     ],

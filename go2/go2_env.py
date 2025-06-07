@@ -1,16 +1,17 @@
-from omni.isaac.lab.scene import InteractiveSceneCfg
-from omni.isaac.lab_assets.unitree import UNITREE_GO2_CFG
-from omni.isaac.lab.sensors import RayCasterCfg, patterns, ContactSensorCfg
-from omni.isaac.lab.utils import configclass
-from omni.isaac.lab.assets import ArticulationCfg, AssetBaseCfg
-import omni.isaac.lab.sim as sim_utils
-import omni.isaac.lab.envs.mdp as mdp
-from omni.isaac.lab.managers import ObservationGroupCfg as ObsGroup
-from omni.isaac.lab.managers import ObservationTermCfg as ObsTerm
-from omni.isaac.lab.envs import ManagerBasedRLEnvCfg
-from omni.isaac.lab.managers import SceneEntityCfg
-from omni.isaac.lab.utils.noise import UniformNoiseCfg
-from omni.isaac.core.utils.viewports import set_camera_view
+from isaaclab.scene import InteractiveSceneCfg
+from isaaclab_assets.robots.unitree import UNITREE_GO2_CFG
+
+from isaaclab.sensors import RayCasterCfg, patterns, ContactSensorCfg
+from isaaclab.utils import configclass
+from isaaclab.assets import ArticulationCfg, AssetBaseCfg
+import isaaclab.sim as sim_utils
+import isaaclab.envs.mdp as mdp
+from isaaclab.managers import ObservationGroupCfg as ObsGroup
+from isaaclab.managers import ObservationTermCfg as ObsTerm
+from isaaclab.envs import ManagerBasedRLEnvCfg
+from isaaclab.managers import SceneEntityCfg
+from isaaclab.utils.noise import UniformNoiseCfg
+from isaacsim.core.utils.viewports import set_camera_view
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import go2.go2_ctrl as go2_ctrl
@@ -19,25 +20,31 @@ import go2.go2_ctrl as go2_ctrl
 @configclass
 class Go2SimCfg(InteractiveSceneCfg):
     # ground plane
-    ground = AssetBaseCfg(prim_path="/World/ground", 
-                          spawn=sim_utils.GroundPlaneCfg(color=(0.1, 0.1, 0.1), size=(300., 300.)),
-                          init_state=AssetBaseCfg.InitialStateCfg(
-                              pos=(0, 0, 1e-4)
-                          ))
+    ground = AssetBaseCfg(
+        prim_path="/World/ground",
+        spawn=sim_utils.GroundPlaneCfg(color=(0.1, 0.1, 0.1), size=(300.0, 300.0)),
+        init_state=AssetBaseCfg.InitialStateCfg(
+            pos=(0, 0, 1e-4)
+        )
+    )
     
+    # lights
     # Lights
     light = AssetBaseCfg(
-        prim_path="/World/light",
+        prim_path="/World/Light",
         spawn=sim_utils.DistantLightCfg(color=(0.75, 0.75, 0.75), intensity=3000.0),
     )
     sky_light = AssetBaseCfg(
-        prim_path="/World/skyLight",
-        spawn=sim_utils.DomeLightCfg(color=(0.2, 0.2, 0.3), intensity=2000.0),
+        prim_path="/World/DomeLight",
+        spawn=sim_utils.DomeLightCfg(color=(0.9, 0.9, 0.9), intensity=500.0),
     )
+    # dome_light = AssetBaseCfg(
+    #     prim_path="/World/DomeLight",
+    #     spawn=sim_utils.DomeLightCfg(color=(0.9, 0.9, 0.9), intensity=500.0),
+    # )
 
     # Go2 Robot
     unitree_go2: ArticulationCfg = UNITREE_GO2_CFG.replace(prim_path="{ENV_REGEX_NS}/Go2")
-
     # Go2 foot contact sensor
     contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Go2/.*_foot", history_length=3, track_air_time=True)
 

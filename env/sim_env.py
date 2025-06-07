@@ -1,12 +1,15 @@
-from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
-from omni.isaac.nucleus import get_assets_root_path
-from omni.isaac.lab.terrains import TerrainImporterCfg, TerrainImporter
-from omni.isaac.lab.terrains import TerrainGeneratorCfg
+from isaacsim.core.utils.prims import define_prim, get_prim_at_path
+try:
+    import isaacsim.storage.native as nucleus_utils
+except ModuleNotFoundError:
+    import isaacsim.core.utils.nucleus as nucleus_utils
+from isaaclab.terrains import TerrainImporterCfg, TerrainImporter
+from isaaclab.terrains import TerrainGeneratorCfg
 from env.terrain_cfg import HfUniformDiscreteObstaclesTerrainCfg
 import omni.replicator.core as rep
 
 def add_semantic_label():
-    ground_plane = rep.get.prims("/World/ground")
+    ground_plane = rep.get.prims("/World/GroundPlane")
     with ground_plane:
     # Add a semantic label
         rep.modify.semantics([("class", "floor")])
@@ -89,7 +92,7 @@ def create_obstacle_dense_env():
 
 def create_warehouse_env():
     add_semantic_label()
-    assets_root_path = get_assets_root_path()
+    assets_root_path = nucleus_utils.get_assets_root_path()
     prim = get_prim_at_path("/World/Warehouse")
     prim = define_prim("/World/Warehouse", "Xform")
     asset_path = assets_root_path+"/Isaac/Environments/Simple_Warehouse/warehouse.usd"
@@ -97,7 +100,7 @@ def create_warehouse_env():
 
 def create_warehouse_forklifts_env():
     add_semantic_label()
-    assets_root_path = get_assets_root_path()
+    assets_root_path = nucleus_utils.get_assets_root_path()
     prim = get_prim_at_path("/World/Warehouse")
     prim = define_prim("/World/Warehouse", "Xform")
     asset_path = assets_root_path+"/Isaac/Environments/Simple_Warehouse/warehouse_with_forklifts.usd"
@@ -105,7 +108,7 @@ def create_warehouse_forklifts_env():
 
 def create_warehouse_shelves_env():
     add_semantic_label()
-    assets_root_path = get_assets_root_path()
+    assets_root_path = nucleus_utils.get_assets_root_path()
     prim = get_prim_at_path("/World/Warehouse")
     prim = define_prim("/World/Warehouse", "Xform")
     asset_path = assets_root_path+"/Isaac/Environments/Simple_Warehouse/warehouse_multiple_shelves.usd"
@@ -113,7 +116,7 @@ def create_warehouse_shelves_env():
 
 def create_full_warehouse_env():
     add_semantic_label()
-    assets_root_path = get_assets_root_path()
+    assets_root_path = nucleus_utils.get_assets_root_path()
     prim = get_prim_at_path("/World/Warehouse")
     prim = define_prim("/World/Warehouse", "Xform")
     asset_path = assets_root_path+"/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
@@ -121,7 +124,7 @@ def create_full_warehouse_env():
 
 def create_hospital_env():
     add_semantic_label()
-    assets_root_path = get_assets_root_path()
+    assets_root_path = nucleus_utils.get_assets_root_path()
     prim = get_prim_at_path("/World/Hospital")
     prim = define_prim("/World/Hospital", "Xform")
     asset_path = assets_root_path+"/Isaac/Environments/Hospital/hospital.usd"
@@ -129,7 +132,7 @@ def create_hospital_env():
 
 def create_office_env():
     add_semantic_label()
-    assets_root_path = get_assets_root_path()
+    assets_root_path = nucleus_utils.get_assets_root_path()
     prim = get_prim_at_path("/World/Office")
     prim = define_prim("/World/Office", "Xform")
     asset_path = assets_root_path+"/Isaac/Environments/Office/office.usd"
