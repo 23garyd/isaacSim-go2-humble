@@ -5,7 +5,7 @@
 [![IsaacLab](https://img.shields.io/badge/IsaacLab-2.1.0-purple.svg)](https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html)
 [![Linux platform](https://img.shields.io/badge/platform-Ubuntu--22.04-green.svg)](https://releases.ubuntu.com/22.04/)
 
-Welcome to the Isaac Sim Unitree Go2 repository! This repository provides a Unitree Go2 quadruped robot simulation, leveraging the Isaac Sim/Isaac Lab framework and integrating seamlessly with a ROS 2 interface. It offers a flexible platform for testing navigation, decision-making, and other autonomous tasks in various scenarios.
+Welcome to the Isaac Sim Unitree Go2 repository! This repository provides a Unitree Go2 quadruped robot simulation on Ubuntu22.04 with RTX 50 series, leveraging the Isaac Sim/Isaac Lab framework and integrating seamlessly with a ROS 2 humble interface. It offers a flexible platform for testing navigation, decision-making, and other autonomous tasks in various scenarios.
 
 
 <table>
@@ -17,10 +17,10 @@ Welcome to the Isaac Sim Unitree Go2 repository! This repository provides a Unit
 
 
 ## Fork notes: RTX 5090 (Blackwell / sm_120) and remote-desktop teleop
-
+Issue:  IsaacSim4.5 torch 2.5 does not support RTX5090 
 This fork applies a small set of patches so the simulation runs on a Blackwell-class GPU (RTX 5090, compute capability `sm_120`) and keyboard teleop works over remote-desktop sessions (VNC, browser-based streaming, etc.).
 
-### RTX 5090 / sm_120 compatibility
+### Add RTX 5090 / sm_120 compatibility 
 
 Isaac Sim 4.5 predates Blackwell, so the PyTorch and CUDA user-space libs bundled inside `$ISAAC_SIM/exts/omni.isaac.ml_archive/pip_prebundle/` (torch `2.5.1+cu118`, `libnvrtc.so.11.2`, etc.) have no `sm_120` kernels. Every GPU tensor op crashes with `CUDA error: no kernel image is available for execution on the device`, and any NVRTC-based JIT fuser fails with `invalid value for --gpu-architecture`. Fix:
 
@@ -34,8 +34,8 @@ Isaac Sim 4.5 predates Blackwell, so the PyTorch and CUDA user-space libs bundle
 
 All four changes are fully reversible — the prebundle renames can be rolled back by removing the suffix, and the companion IsaacLab patch is a 4-line diff.
 
-### Remote-desktop keyboard teleop
-
+### Fix Remote-desktop keyboard teleop
+Issue: WSAD not working if running in remote desktop. 
 Most remote-desktop stacks expand a held key into rapid `PRESS` + `RELEASE` pairs instead of a single `PRESS` followed by `KEY_REPEAT` events. The upstream handler zeroed the velocity command on every `RELEASE`, so each `PRESS` that set it was zeroed in the same sim step — the RL policy always saw a zero target.
 
 This fork rewrites the carb keyboard handler in `go2/go2_ctrl.py` to be **timeout-sticky**:
