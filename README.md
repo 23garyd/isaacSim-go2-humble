@@ -56,6 +56,7 @@ Tune `_STICKY_TIMEOUT` at the top of `go2/go2_ctrl.py` (e.g. down to 0.12 s) if 
 **Step III:** Install the prerequisite C extension in the conda environment. [reference link](https://stackoverflow.com/questions/58424974/anaconda-importerror-usr-lib64-libstdc-so-6-version-glibcxx-3-4-21-not-fo)
 ```
 # default conda env for Isaac Lab
+source ~/miniforge3/etc/profile.d/conda.sh
 conda activate env_isaaclab      
 ```
 
@@ -67,6 +68,7 @@ git clone https://github.com/Zhefan-Xu/isaac-go2-ros2.git
 ## Run Unitree Go2 Simulation 
 To run the simulation, please use the following command:
 ```
+source ~/miniforge3/etc/profile.d/conda.sh
 conda activate isaaclab
 python isaac_go2_ros2.py
 ```
