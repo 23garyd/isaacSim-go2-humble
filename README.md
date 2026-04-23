@@ -5,12 +5,6 @@
 [![IsaacLab](https://img.shields.io/badge/IsaacLab-2.1.0-purple.svg)](https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html)
 [![Linux platform](https://img.shields.io/badge/platform-Ubuntu--22.04-green.svg)](https://releases.ubuntu.com/22.04/)
 
-This branch supports isaac sim 4.5 and isaaclab 2.1.
-
-Please check ```isaacsim-4.2``` branch for isaac sim 4.2 version.
-
-Please check ```isaacsim-4.5-docker``` branch if you want to run inside a docker.
-
 Welcome to the Isaac Sim Unitree Go2 repository! This repository provides a Unitree Go2 quadruped robot simulation, leveraging the Isaac Sim/Isaac Lab framework and integrating seamlessly with a ROS 2 interface. It offers a flexible platform for testing navigation, decision-making, and other autonomous tasks in various scenarios.
 
 
@@ -21,6 +15,36 @@ Welcome to the Isaac Sim Unitree Go2 repository! This repository provides a Unit
   </tr>
 </table>
 
+
+## Fork notes: RTX 5090 (Blackwell / sm_120) and remote-desktop teleop
+
+This fork applies a small set of patches so the simulation runs on a Blackwell-class GPU (RTX 5090, compute capability `sm_120`) and keyboard teleop works over remote-desktop sessions (VNC, browser-based streaming, etc.).
+
+### RTX 5090 / sm_120 compatibility
+
+Isaac Sim 4.5 predates Blackwell, so the PyTorch and CUDA user-space libs bundled inside `$ISAAC_SIM/exts/omni.isaac.ml_archive/pip_prebundle/` (torch `2.5.1+cu118`, `libnvrtc.so.11.2`, etc.) have no `sm_120` kernels. Every GPU tensor op crashes with `CUDA error: no kernel image is available for execution on the device`, and any NVRTC-based JIT fuser fails with `invalid value for --gpu-architecture`. Fix:
+
+1. Inside `$ISAAC_SIM/exts/omni.isaac.ml_archive/pip_prebundle/`, rename the bundled `torch/`, `torchvision/`, `torchaudio/`, `functorch/`, `torchgen/`, `torchvision.libs/` and their `.dist-info` siblings with a trailing suffix (e.g. `.sm120-disabled`) so Python falls through to the env's `site-packages`.
+2. Install Blackwell-capable wheels into your `env_isaaclab`:
+   ```bash
+   pip install --index-url https://download.pytorch.org/whl/cu128        torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1
+   ```
+3. In the same prebundle, also rename `nvidia/` (the whole regular package — it has an `__init__.py`, so it shadows the env's namespace `nvidia/`) together with every `nvidia_*_cu11-*.dist-info` sibling. Without this step `torch.jit` loads `libnvrtc.so.11.2` from the prebundle and sm_120 JIT compilation fails.
+4. Companion patch for a trimesh 4.11+ API change in terrain generation lives in the IsaacLab fork: [23garyd/isaacLab](https://github.com/23garyd/isaacLab) (`color_meshes_by_height` now resolves non-built-in colormap names via matplotlib).
+
+All four changes are fully reversible — the prebundle renames can be rolled back by removing the suffix, and the companion IsaacLab patch is a 4-line diff.
+
+### Remote-desktop keyboard teleop
+
+Most remote-desktop stacks expand a held key into rapid `PRESS` + `RELEASE` pairs instead of a single `PRESS` followed by `KEY_REPEAT` events. The upstream handler zeroed the velocity command on every `RELEASE`, so each `PRESS` that set it was zeroed in the same sim step — the RL policy always saw a zero target.
+
+This fork rewrites the carb keyboard handler in `go2/go2_ctrl.py` to be **timeout-sticky**:
+
+- Every `KEY_PRESS` of a move key stamps `time.monotonic()` in `_last_press_time[env_idx]`.
+- `base_vel_cmd()` (called each sim step) decays any row whose last `PRESS` is older than `_STICKY_TIMEOUT` (default 200 ms).
+- The `KEY_RELEASE` branch is removed entirely — autorepeat keeps the command fresh while you hold, and ~200 ms after you let go it decays to zero.
+
+Tune `_STICKY_TIMEOUT` at the top of `go2/go2_ctrl.py` (e.g. down to 0.12 s) if the robot drifts too long after releasing.
 
 ## Installation Guide
 **Step 0:** Install [Isaac Sim 4.5](https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/download.html) (Download and extract contents in `${HOME}/isaacsim`)
