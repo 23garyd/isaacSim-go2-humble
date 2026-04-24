@@ -5,6 +5,10 @@ num_envs: 1
 freq: 40 # can only be divisible by 200
 camera_follow: True
 env_name: obstacle-dense
+
+# Set false when running alongside isaac_sim_nav_bridge
+# (the sim adapter publishes the proper odom->base_link TF instead).
+publish_base_tf: True
 # env_name: full-warehouse
 
 sensor:

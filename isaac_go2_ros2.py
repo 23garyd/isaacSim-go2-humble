@@ -1,4 +1,5 @@
 import os
+import sys
 import hydra
 import rclpy
 import torch
@@ -12,8 +13,10 @@ parser = argparse.ArgumentParser(description="Tutorial on running the cartpole R
 
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
-# parse the arguments
-args_cli = parser.parse_args()
+# parse the arguments (forward unknown args, e.g. Hydra overrides like
+# publish_base_tf=false, on to the @hydra.main entry point via sys.argv)
+args_cli, hydra_args = parser.parse_known_args()
+sys.argv = [sys.argv[0]] + hydra_args
 
 # launch omniverse app
 app_launcher = AppLauncher(args_cli)
